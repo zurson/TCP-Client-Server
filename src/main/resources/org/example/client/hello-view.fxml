@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="530.0" prefWidth="580.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.client.ClientController">
+   <children>
+      <Button fx:id="connectButton" layoutX="484.0" layoutY="10.0" mnemonicParsing="false" onAction="#onConnectButtonClick" prefHeight="25.0" prefWidth="86.0" text="Connect" />
+      <Label fx:id="statusLabel" layoutX="13.0" layoutY="14.0" prefHeight="17.0" prefWidth="101.0" text="Status: OFFLINE" />
+      <TextField fx:id="portField" layoutX="324.0" layoutY="10.0" text="12" />
+      <Label layoutX="114.0" layoutY="14.0" text="IP:" />
+      <TextField fx:id="ipField" layoutX="134.0" layoutY="10.0" text="localhost" />
+      <Label layoutX="293.0" layoutY="14.0" text="Port:" />
+      <TextArea fx:id="textArea" layoutX="11.0" layoutY="225.0" prefHeight="293.0" prefWidth="557.0" />
+      <TextField fx:id="messageField" layoutX="17.0" layoutY="105.0" prefHeight="25.0" prefWidth="545.0" text="Example message" />
+      <Label layoutX="236.0" layoutY="67.0" prefHeight="38.0" prefWidth="108.0" text="Text to send">
+         <font>
+            <Font name="System Bold" size="18.0" />
+         </font>
+      </Label>
+      <Button fx:id="sendButton" layoutX="195.0" layoutY="147.0" mnemonicParsing="false" onAction="#onSendMessageButtonClick" prefHeight="57.0" prefWidth="195.0" text="Send message">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Button>
+      <Label layoutX="13.0" layoutY="204.0" prefHeight="17.0" prefWidth="45.0" text="Logs">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <Button fx:id="disconnectButton" layoutX="484.0" layoutY="42.0" mnemonicParsing="false" onAction="#onDisconnectButtonClick" prefHeight="25.0" prefWidth="86.0" text="Disconnect" />
+   </children>
+</AnchorPane>
