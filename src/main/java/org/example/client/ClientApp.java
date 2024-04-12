@@ -13,7 +13,7 @@ public class ClientApp extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        fxmlLoader = new FXMLLoader(ClientApp.class.getResource("hello-view.fxml"));
+        fxmlLoader = new FXMLLoader(ClientApp.class.getResource("client-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 580, 530);
         stage.setTitle("TCP Client");
         stage.setScene(scene);
