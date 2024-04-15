@@ -6,7 +6,7 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.server.ServerController">
    <children>
-      <TextField fx:id="portField" layoutX="211.0" layoutY="11.0" prefHeight="25.0" prefWidth="79.0" />
+      <TextField fx:id="portField" layoutX="211.0" layoutY="11.0" prefHeight="25.0" prefWidth="79.0" text="7" />
       <Label layoutX="174.0" layoutY="14.0" text="Port:">
          <font>
             <Font size="14.0" />

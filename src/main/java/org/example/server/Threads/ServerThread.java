@@ -1,5 +1,6 @@
 package org.example.server.Threads;
 
+import org.example.server.ClientsListAccess;
 import org.example.server.Exceptions.ClientException;
 import org.example.server.Exceptions.ListenException;
 import org.example.server.ServerApp;
@@ -9,24 +10,35 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-public class ServerThread extends Thread {
+public class ServerThread extends Thread implements ClientsListAccess {
     private static final String SERVER_PREFIX = "[SERVER] ";
-
     private static final String PORT_LESS_THAN_ZERO_MSG = "Port cannot be less than zero!";
     private static final String SERVER_SOCKET_NULL_MSG = SERVER_PREFIX + "Server socket cannot be null!";
     private static final String SERVER_OFFLINE_MSG = SERVER_PREFIX + "Server must bo online before accepting connections!";
+    private static final String CLOSING_CLIENT_MSG = "Closing client: ";
 
+    private final List<ClientThread> clients;
     private final ServerSocket serverSocket;
-    private boolean online;
+    private final AtomicBoolean running;
+    private final Lock lock;
 
-    public ServerThread(String portInText) throws IOException, ListenException, IllegalArgumentException {
+
+    public ServerThread(String portInText) throws IOException, ListenException {
         int port = convertPort(portInText);
+
+        this.running = new AtomicBoolean(false);
+        this.clients = new ArrayList<>();
+        this.lock = new ReentrantLock();
 
         serverSocket = new ServerSocket();
         bindSocket(port);
     }
-
 
 
     @Override
@@ -39,6 +51,7 @@ public class ServerThread extends Thread {
         }
     }
 
+
     private void listenForConnections() throws ListenException {
         if (serverSocket == null)
             throw new ListenException(SERVER_SOCKET_NULL_MSG);
@@ -47,12 +60,12 @@ public class ServerThread extends Thread {
             throw new ListenException(SERVER_OFFLINE_MSG);
 
         Socket clientSocket = null;
-        this.online = true;
+        setRunning(true);
 
-        while (online) {
+        while (running.get()) {
             try {
                 clientSocket = acceptConnection();
-                runClientThread(clientSocket);
+                spawnClientThread(clientSocket);
             } catch (IOException | ClientException e) {
                 log(e.getMessage());
                 closeClientSocket(clientSocket);
@@ -61,47 +74,72 @@ public class ServerThread extends Thread {
 
     }
 
+
     private Socket acceptConnection() throws IOException {
         return serverSocket.accept();
     }
 
-    private void runClientThread(Socket clientSocket) throws ClientException {
-        ClientThread clientThread = new ClientThread(clientSocket);
+
+    private void spawnClientThread(Socket clientSocket) throws ClientException, IOException {
+        ClientThread clientThread = new ClientThread(clientSocket, this);
         Thread thread = new Thread(clientThread);
-        thread.setDaemon(true);
         thread.start();
+
+        lock.lock();
+        this.clients.add(clientThread);
+        lock.unlock();
     }
+
+
+    private void disconnectAllClients() {
+
+        for (ClientThread clientThread : clients) {
+            log(CLOSING_CLIENT_MSG + clientThread.getIdentifier());
+            clientThread.closeSocket();
+        }
+        this.clients.clear();
+
+    }
+
 
     private void closeClientSocket(Socket clientSocket) {
         if (clientSocket == null)
             return;
 
         try {
+            lock.lock();
             clientSocket.close();
         } catch (IOException e) {
             log(e.getMessage());
         } finally {
-            this.online = false;
+            lock.unlock();
         }
+
     }
+
 
     public void closeServer() {
         if (serverSocket == null || serverSocket.isClosed())
             return;
-
+        ;
         try {
+            lock.lock();
+            disconnectAllClients();
             serverSocket.close();
         } catch (IOException e) {
             log(e.getMessage());
         } finally {
-            this.interrupt();
+            setRunning(false);
+            lock.unlock();
         }
     }
+
 
     private void bindSocket(int port) throws IOException {
         SocketAddress socketPort = new InetSocketAddress(port);
         serverSocket.bind(socketPort);
     }
+
 
     private int convertPort(String portInText) throws NumberFormatException {
         int port = Integer.parseInt(portInText);
@@ -112,9 +150,24 @@ public class ServerThread extends Thread {
         return port;
     }
 
+
     private void log(String message) {
         ServerApp.getController().log(SERVER_PREFIX + message);
     }
 
+
+    private void setRunning(boolean running) {
+        this.running.set(running);
+    }
+
+    @Override
+    public void removeClient(ClientThread clientThread) {
+        if (clientThread == null)
+            return;
+
+        lock.lock();
+        this.clients.remove(clientThread);
+        lock.unlock();
+    }
 
 }

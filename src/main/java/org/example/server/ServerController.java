@@ -9,19 +9,26 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import org.example.server.Enums.ServerStatus;
 import org.example.server.Exceptions.ListenException;
+import org.example.server.Threads.ServerManagerThread;
 import org.example.server.Threads.ServerThread;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ServerController implements Initializable {
     private final static String STATUS_PREFIX = "Status: ";
     private final static String CONNECTIONS_PREFIX = "Connections: ";
+    private static final String SERVER_IS_NOT_ONLINE_MSG = "Server is not online!";
+    private static final String SERVER_STOPPED_MSG = "Server stopped!";
+    private static final String SERVER_STARTED_MSG = "Server started!";
+    private static final String INCORRECT_PORT_NUMBER_MSG = "Incorrect port number!";
 
 
     @FXML
-    private Label statusLabel, getConnectionsLabel;
+    private Label statusLabel, connectionsLabel;
 
     @FXML
     private Button startButton, stopButton;
@@ -32,105 +39,142 @@ public class ServerController implements Initializable {
     @FXML
     private TextArea textArea;
 
-    private Thread server;
-    private ServerThread serverThread;
+    private ServerManagerThread serverManager;
 
     private int connections;
 
-
+    private Lock lock;
 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        this.lock = new ReentrantLock();
+
         setServerStatus(ServerStatus.OFFLINE);
         setButtonEnable(startButton, true);
         setButtonEnable(stopButton, false);
 
-        connections = 0;
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
     }
+
 
     @FXML
     private void onStartButtonClick() {
+        startServer();
+    }
 
-        Platform.runLater(() -> {
-            try {
-                serverThread = new ServerThread(portField.getText());
-                server = new Thread(serverThread);
-//                server.setDaemon(true);
-                server.start();
-            }catch (IOException | ListenException | IllegalArgumentException e) {
-                log(e.getMessage());
-                return;
-            }
 
-            log("Server started!");
+    @FXML
+    private void onStopButtonClick() {
+        stopServer();
+    }
+
+
+    private void startServer() {
+
+        try {
+            lock.lock();
+
+            connections = 0;
+            updateConnectionsLabel(connections);
+
+            runServerThread();
+
+            log(SERVER_STARTED_MSG);
 
             setButtonEnable(stopButton, true);
             setButtonEnable(startButton, false);
             setServerStatus(ServerStatus.ONLINE);
-        });
+
+            lock.unlock();
+
+        } catch (IOException | ListenException | IllegalArgumentException e) {
+
+            if (e instanceof IllegalArgumentException)
+                log(INCORRECT_PORT_NUMBER_MSG);
+            else
+                log(e.getMessage());
+
+            serverManager = null;
+        }
+
+
     }
 
-    @FXML
-    private void onStopButtonClick() {
-        if (serverThread == null) {
-            log("Server is not online!");
+    private void runServerThread() throws ListenException, IOException {
+        serverManager = new ServerManagerThread(portField.getText());
+        Thread server = new Thread(serverManager);
+        server.start();
+    }
+
+
+    private void stopServer() {
+        if (serverManager == null) {
+            log(SERVER_IS_NOT_ONLINE_MSG);
             return;
         }
 
-        serverThread.closeServer();
+        try {
+            lock.lock();
 
-        log("Server stopped!");
+            serverManager.stopServer();
 
-        setButtonEnable(stopButton, false);
-        setButtonEnable(startButton, true);
-        setServerStatus(ServerStatus.OFFLINE);
+            log(SERVER_STOPPED_MSG);
+
+            setButtonEnable(stopButton, false);
+            setButtonEnable(startButton, true);
+            setServerStatus(ServerStatus.OFFLINE);
+
+            serverManager = null;
+        } finally {
+            lock.unlock();
+        }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     private void setButtonEnable(Button button, boolean status) {
         if (button == null)
             return;
 
-        button.setDisable(!status);
+        Platform.runLater(() -> button.setDisable(!status));
     }
 
     public void log(String text) {
         if (text == null || text.isEmpty())
             return;
 
-        textArea.appendText(text + '\n');
+        lock.lock();
+        Platform.runLater(() -> textArea.appendText(text + '\n'));
+        lock.unlock();
     }
 
     public void setServerStatus(ServerStatus status) {
         statusLabel.setText(STATUS_PREFIX + status);
     }
 
-    private void updateConnectionsLabel(int connections) {
-        getConnectionsLabel.setText(CONNECTIONS_PREFIX + connections);
+    public void updateConnectionsLabel(int connections) {
+        lock.lock();
+        Platform.runLater(() -> connectionsLabel.setText(CONNECTIONS_PREFIX + connections));
+        lock.unlock();
     }
 
     public void addConnection() {
+        lock.lock();
+
         connections++;
         updateConnectionsLabel(connections);
+
+        lock.unlock();
     }
 
     public void removeConnection() {
+        lock.lock();
+
         connections--;
         updateConnectionsLabel(connections);
+
+        lock.unlock();
     }
 
 }
