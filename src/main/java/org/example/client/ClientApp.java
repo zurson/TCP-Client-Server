@@ -9,11 +9,9 @@ import java.io.IOException;
 
 public class ClientApp extends Application {
 
-    private static FXMLLoader fxmlLoader;
-
     @Override
     public void start(Stage stage) throws IOException {
-        fxmlLoader = new FXMLLoader(ClientApp.class.getResource("client-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(ClientApp.class.getResource("client-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 580, 530);
         stage.setTitle("TCP Client");
         stage.setScene(scene);
@@ -23,10 +21,6 @@ public class ClientApp extends Application {
 
     public static void main(String[] args) {
         launch();
-    }
-
-    public static FXMLLoader getLoader() {
-        return fxmlLoader;
     }
 
 }
