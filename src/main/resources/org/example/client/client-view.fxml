@@ -8,7 +8,7 @@
    <children>
       <Button fx:id="connectButton" layoutX="484.0" layoutY="10.0" mnemonicParsing="false" onAction="#onConnectButtonClick" prefHeight="25.0" prefWidth="86.0" text="Connect" />
       <Label fx:id="statusLabel" layoutX="13.0" layoutY="14.0" prefHeight="17.0" prefWidth="101.0" text="Status: OFFLINE" />
-      <TextField fx:id="portField" layoutX="324.0" layoutY="10.0" text="12" />
+      <TextField fx:id="portField" layoutX="324.0" layoutY="10.0" text="7" />
       <Label layoutX="114.0" layoutY="14.0" text="IP:" />
       <TextField fx:id="ipField" layoutX="134.0" layoutY="10.0" text="localhost" />
       <Label layoutX="293.0" layoutY="14.0" text="Port:" />
