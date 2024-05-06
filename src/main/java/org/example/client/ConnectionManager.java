@@ -34,7 +34,7 @@ public class ConnectionManager {
         setPortAndIp(ip, port);
     }
 
-    private void setPortAndIp(String ip, int port) throws IOException, ManagerInitializeException {
+    private void setPortAndIp(String ip, int port) throws ManagerInitializeException {
         if (ip == null || ip.isEmpty())
             throw new ManagerInitializeException(INCORRECT_IP_MESSAGE);
 

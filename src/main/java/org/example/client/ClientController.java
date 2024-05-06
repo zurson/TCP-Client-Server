@@ -23,8 +23,9 @@ public class ClientController implements Initializable {
     private static final String LACK_OF_MESSAGE_TO_SEND_MSG = "First input a message to send!";
     private static final String DISCONNECTED_MESSAGE = "Disconnected from the server!";
     private static final String CONNECTED_MESSAGE = "Connected to the server!";
-
     private static final String PORT_LESS_THAN_ZERO_MSG = "Port cannot be less than zero!";
+    private static final String SERVER_BUSY = "SERVER BUSY";
+
 
     @FXML
     private TextArea textArea;
@@ -98,6 +99,13 @@ public class ClientController implements Initializable {
             setConnectionStatus(ConnectionStatus.ONLINE);
             setButtonEnable(disconnectButton, true);
             setButtonEnable(connectButton, false);
+
+            RecvResult recvResult = connectionManager.recvMessage();
+            if (recvResult.getMessage().equals(SERVER_BUSY)) {
+                log(SERVER_BUSY);
+                connectionManager.disconnect();
+                disconnect();
+            }
 
         } catch (NumberFormatException | ManagerInitializeException | SendRecvException | IOException e) {
             log(e.getMessage());
