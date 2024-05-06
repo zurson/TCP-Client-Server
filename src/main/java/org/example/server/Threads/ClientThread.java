@@ -8,7 +8,6 @@ import org.example.server.Utils.RecvResult;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
@@ -20,6 +19,8 @@ public class ClientThread extends Thread {
     private static final String NEW_CLIENT_CONNECTED_PREFIX = "New Client connected: ";
     private static final String CLIENT_DISCONNECTED_PREFIX = "Client disconnected: ";
     private static final String CLIENT_NOT_CONNECTED_MSG = "Client is not connected!";
+    private static final String MAX_CONNECTIONS_MSG = "SERVER BUSY";
+    private static final String SERVER_NOT_BUSY_MSG = "SERVER NOT BUSY";
 
     private final static int MAX_BYTES = 1024;
     private DataInputStream inputStream;
@@ -27,8 +28,9 @@ public class ClientThread extends Thread {
     private final Socket clientSocket;
     private final ClientsListAccess clientsListAccess;
     private final UUID uuid;
+    private boolean serverBusy;
 
-    public ClientThread(Socket clientSocket, ClientsListAccess clientsListAccess) throws ClientException, IOException {
+    public ClientThread(Socket clientSocket, ClientsListAccess clientsListAccess, boolean serverBusy) throws ClientException, IOException {
         if (clientSocket == null || clientsListAccess == null)
             throw new ClientException(SERVER_SOCKET_NULL_MSG);
 
@@ -42,13 +44,27 @@ public class ClientThread extends Thread {
         this.outputStream = new DataOutputStream(this.clientSocket.getOutputStream());
         this.inputStream = new DataInputStream(this.clientSocket.getInputStream());
 
-        ServerApp.getController().addConnection();
+        this.serverBusy = serverBusy;
+
+        ServerApp.getController().increaseConnectionCounter();
+        ServerApp.getController().addConnection(getIdentifier());
     }
 
 
     @Override
     public void run() {
         ServerApp.getController().log(NEW_CLIENT_CONNECTED_PREFIX + getIdentifier());
+
+        if (serverBusy) {
+            disconnectAsServerIsFull();
+            return;
+        }
+
+        try {
+            sendMessage(SERVER_NOT_BUSY_MSG);
+        } catch (IOException e) {
+            log(e.getMessage());
+        }
 
         while (true) {
             try {
@@ -62,6 +78,21 @@ public class ClientThread extends Thread {
                 break;
             }
 
+        }
+
+    }
+
+
+    private void disconnectAsServerIsFull() {
+        try {
+            String id = getIdentifier();
+            sendMessage(MAX_CONNECTIONS_MSG);
+            closeSocket();
+            log(id + " " + MAX_CONNECTIONS_MSG);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            clientsListAccess.removeClient(this);
         }
 
     }
@@ -83,7 +114,7 @@ public class ClientThread extends Thread {
         } catch (IOException e) {
             log(e.getMessage());
         } finally {
-            ServerApp.getController().removeConnection();
+            ServerApp.getController().decreaseConnectionCounter();
         }
     }
 

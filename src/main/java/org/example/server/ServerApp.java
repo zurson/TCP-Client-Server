@@ -14,7 +14,7 @@ public class ServerApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         fxmlLoader = new FXMLLoader(ServerApp.class.getResource("server-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 500, 400);
+        Scene scene = new Scene(fxmlLoader.load(), 700, 500);
         stage.setTitle("Server App");
         stage.setScene(scene);
         stage.setResizable(false);

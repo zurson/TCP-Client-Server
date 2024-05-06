@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.server.ServerController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.server.ServerController">
    <children>
       <TextField fx:id="portField" layoutX="211.0" layoutY="11.0" prefHeight="25.0" prefWidth="79.0" text="7" />
       <Label layoutX="174.0" layoutY="14.0" text="Port:">
@@ -13,10 +13,12 @@
          </font>
       </Label>
       <Label fx:id="statusLabel" layoutX="14.0" layoutY="15.0" prefHeight="17.0" prefWidth="100.0" text="Status: OFFLINE" />
-      <Button fx:id="startButton" layoutX="379.0" layoutY="12.0" mnemonicParsing="false" onAction="#onStartButtonClick" text="Start" />
-      <Button fx:id="stopButton" layoutX="445.0" layoutY="12.0" mnemonicParsing="false" onAction="#onStopButtonClick" text="Stop" />
-      <TextArea fx:id="textArea" layoutX="10.0" layoutY="100.0" prefHeight="289.0" prefWidth="480.0" />
-      <Label layoutX="14.0" layoutY="83.0" prefHeight="17.0" prefWidth="41.0" text="Logs:" />
+      <Button fx:id="startButton" layoutX="322.0" layoutY="11.0" mnemonicParsing="false" onAction="#onStartButtonClick" text="Start" />
+      <Button fx:id="stopButton" layoutX="378.0" layoutY="11.0" mnemonicParsing="false" onAction="#onStopButtonClick" text="Stop" />
+      <TextArea fx:id="logsTextArea" layoutX="13.0" layoutY="197.0" prefHeight="289.0" prefWidth="674.0" />
+      <Label layoutX="14.0" layoutY="181.0" prefHeight="17.0" prefWidth="41.0" text="Logs:" />
       <Label fx:id="connectionsLabel" layoutX="14.0" layoutY="45.0" prefHeight="17.0" prefWidth="100.0" text="Connections: 0" />
+      <TextArea fx:id="connectionsTextArea" layoutX="266.0" layoutY="75.0" prefHeight="106.0" prefWidth="421.0" />
+      <Label layoutX="266.0" layoutY="54.0" text="Connections" />
    </children>
 </AnchorPane>

@@ -10,10 +10,10 @@ import javafx.scene.control.TextField;
 import org.example.server.Enums.ServerStatus;
 import org.example.server.Exceptions.ListenException;
 import org.example.server.Threads.ServerManagerThread;
-import org.example.server.Threads.ServerThread;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -37,7 +37,7 @@ public class ServerController implements Initializable {
     private TextField portField;
 
     @FXML
-    private TextArea textArea;
+    private TextArea logsTextArea, connectionsTextArea;
 
     private ServerManagerThread serverManager;
 
@@ -54,8 +54,8 @@ public class ServerController implements Initializable {
         setButtonEnable(startButton, true);
         setButtonEnable(stopButton, false);
 
-        textArea.setEditable(false);
-        textArea.setWrapText(true);
+        logsTextArea.setEditable(false);
+        logsTextArea.setWrapText(true);
     }
 
 
@@ -86,6 +86,8 @@ public class ServerController implements Initializable {
             setButtonEnable(stopButton, true);
             setButtonEnable(startButton, false);
             setServerStatus(ServerStatus.ONLINE);
+
+            clearConnections();
 
             lock.unlock();
 
@@ -126,6 +128,8 @@ public class ServerController implements Initializable {
             setButtonEnable(startButton, true);
             setServerStatus(ServerStatus.OFFLINE);
 
+            clearConnections();
+
             serverManager = null;
         } finally {
             lock.unlock();
@@ -145,7 +149,7 @@ public class ServerController implements Initializable {
             return;
 
         lock.lock();
-        Platform.runLater(() -> textArea.appendText(text + '\n'));
+        Platform.runLater(() -> logsTextArea.appendText(text + '\n'));
         lock.unlock();
     }
 
@@ -159,7 +163,7 @@ public class ServerController implements Initializable {
         lock.unlock();
     }
 
-    public void addConnection() {
+    public void increaseConnectionCounter() {
         lock.lock();
 
         connections++;
@@ -168,7 +172,7 @@ public class ServerController implements Initializable {
         lock.unlock();
     }
 
-    public void removeConnection() {
+    public void decreaseConnectionCounter() {
         lock.lock();
 
         connections--;
@@ -176,5 +180,31 @@ public class ServerController implements Initializable {
 
         lock.unlock();
     }
+
+    public int getConnectionCounter() {
+        try {
+            lock.lock();
+            return connections;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void addConnection(String name) {
+        connectionsTextArea.appendText(name + '\n');
+    }
+
+    public void updateConnections(List<String> connections) {
+        clearConnections();
+
+        for (String conn : connections)
+            connectionsTextArea.appendText(conn + '\n');
+    }
+
+    private void clearConnections() {
+        connectionsTextArea.clear();
+    }
+
+
 
 }

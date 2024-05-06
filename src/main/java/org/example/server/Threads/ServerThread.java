@@ -23,13 +23,15 @@ public class ServerThread extends Thread implements ClientsListAccess {
     private static final String SERVER_OFFLINE_MSG = SERVER_PREFIX + "Server must bo online before accepting connections!";
     private static final String CLOSING_CLIENT_MSG = "Closing client: ";
 
+    private static final int MAX_CONNECTIONS = 1;
+
     private final List<ClientThread> clients;
     private final ServerSocket serverSocket;
     private final AtomicBoolean running;
     private final Lock lock;
 
 
-    public ServerThread(String portInText) throws IOException, ListenException {
+    public ServerThread(String portInText) throws IOException {
         int port = convertPort(portInText);
 
         this.running = new AtomicBoolean(false);
@@ -81,7 +83,7 @@ public class ServerThread extends Thread implements ClientsListAccess {
 
 
     private void spawnClientThread(Socket clientSocket) throws ClientException, IOException {
-        ClientThread clientThread = new ClientThread(clientSocket, this);
+        ClientThread clientThread = new ClientThread(clientSocket, this, maxClientsReached());
         Thread thread = new Thread(clientThread);
         thread.start();
 
@@ -91,14 +93,19 @@ public class ServerThread extends Thread implements ClientsListAccess {
     }
 
 
+    private boolean maxClientsReached() {
+        return ServerApp.getController().getConnectionCounter() >= MAX_CONNECTIONS;
+    }
+
+
     private void disconnectAllClients() {
 
         for (ClientThread clientThread : clients) {
             log(CLOSING_CLIENT_MSG + clientThread.getIdentifier());
             clientThread.closeSocket();
         }
-        this.clients.clear();
 
+        this.clients.clear();
     }
 
 
@@ -167,7 +174,19 @@ public class ServerThread extends Thread implements ClientsListAccess {
 
         lock.lock();
         this.clients.remove(clientThread);
+        ServerApp.getController().updateConnections(getCurrentConnectionsIds());
+
+
         lock.unlock();
+    }
+
+    private List<String> getCurrentConnectionsIds() {
+        List<String> ids = new ArrayList<>();
+
+        for (ClientThread clientThread : clients)
+            ids.add(clientThread.getIdentifier());
+
+        return ids;
     }
 
 }
