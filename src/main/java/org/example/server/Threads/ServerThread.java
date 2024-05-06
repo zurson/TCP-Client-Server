@@ -143,7 +143,7 @@ public class ServerThread extends Thread implements ClientsListAccess {
 
 
     private void bindSocket(int port) throws IOException {
-        SocketAddress socketPort = new InetSocketAddress(port);
+        SocketAddress socketPort = new InetSocketAddress("0.0.0.0", port);
         serverSocket.bind(socketPort);
     }
 
