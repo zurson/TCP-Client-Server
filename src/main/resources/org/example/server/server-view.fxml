@@ -15,8 +15,10 @@
       <Label fx:id="statusLabel" layoutX="14.0" layoutY="15.0" prefHeight="17.0" prefWidth="100.0" text="Status: OFFLINE" />
       <Button fx:id="startButton" layoutX="379.0" layoutY="12.0" mnemonicParsing="false" onAction="#onStartButtonClick" text="Start" />
       <Button fx:id="stopButton" layoutX="445.0" layoutY="12.0" mnemonicParsing="false" onAction="#onStopButtonClick" text="Stop" />
-      <TextArea fx:id="textArea" layoutX="10.0" layoutY="100.0" prefHeight="289.0" prefWidth="480.0" />
-      <Label layoutX="14.0" layoutY="83.0" prefHeight="17.0" prefWidth="41.0" text="Logs:" />
+      <TextArea fx:id="textArea" layoutX="10.0" layoutY="143.0" prefHeight="246.0" prefWidth="480.0" />
+      <Label layoutX="14.0" layoutY="121.0" prefHeight="17.0" prefWidth="41.0" text="Logs:" />
       <Label fx:id="connectionsLabel" layoutX="14.0" layoutY="45.0" prefHeight="17.0" prefWidth="100.0" text="Connections: 0" />
+      <TextArea fx:id="connectionsTextArea" layoutX="189.0" layoutY="71.0" prefHeight="50.0" prefWidth="302.0" />
+      <Label layoutX="189.0" layoutY="54.0" text="Connections:" />
    </children>
 </AnchorPane>

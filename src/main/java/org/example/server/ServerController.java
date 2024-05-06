@@ -10,13 +10,10 @@ import javafx.scene.control.TextField;
 import org.example.server.Enums.ServerStatus;
 import org.example.server.Exceptions.ListenException;
 import org.example.server.Threads.ServerManagerThread;
-import org.example.server.Threads.ServerThread;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class ServerController implements Initializable {
     private final static String STATUS_PREFIX = "Status: ";
@@ -37,19 +34,15 @@ public class ServerController implements Initializable {
     private TextField portField;
 
     @FXML
-    private TextArea textArea;
+    private TextArea textArea, connectionsTextArea;
 
     private ServerManagerThread serverManager;
 
     private int connections;
 
-    private Lock lock;
-
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        this.lock = new ReentrantLock();
-
         setServerStatus(ServerStatus.OFFLINE);
         setButtonEnable(startButton, true);
         setButtonEnable(stopButton, false);
@@ -74,7 +67,6 @@ public class ServerController implements Initializable {
     private void startServer() {
 
         try {
-            lock.lock();
 
             connections = 0;
             updateConnectionsLabel(connections);
@@ -87,7 +79,7 @@ public class ServerController implements Initializable {
             setButtonEnable(startButton, false);
             setServerStatus(ServerStatus.ONLINE);
 
-            lock.unlock();
+            connectionsTextArea.clear();
 
         } catch (IOException | ListenException | IllegalArgumentException e) {
 
@@ -115,21 +107,18 @@ public class ServerController implements Initializable {
             return;
         }
 
-        try {
-            lock.lock();
+        serverManager.stopServer();
 
-            serverManager.stopServer();
+        log(SERVER_STOPPED_MSG);
 
-            log(SERVER_STOPPED_MSG);
+        setButtonEnable(stopButton, false);
+        setButtonEnable(startButton, true);
+        setServerStatus(ServerStatus.OFFLINE);
 
-            setButtonEnable(stopButton, false);
-            setButtonEnable(startButton, true);
-            setServerStatus(ServerStatus.OFFLINE);
+        connectionsTextArea.clear();
 
-            serverManager = null;
-        } finally {
-            lock.unlock();
-        }
+        serverManager = null;
+
     }
 
 
@@ -144,9 +133,7 @@ public class ServerController implements Initializable {
         if (text == null || text.isEmpty())
             return;
 
-        lock.lock();
         Platform.runLater(() -> textArea.appendText(text + '\n'));
-        lock.unlock();
     }
 
     public void setServerStatus(ServerStatus status) {
@@ -154,27 +141,21 @@ public class ServerController implements Initializable {
     }
 
     public void updateConnectionsLabel(int connections) {
-        lock.lock();
         Platform.runLater(() -> connectionsLabel.setText(CONNECTIONS_PREFIX + connections));
-        lock.unlock();
     }
 
-    public void addConnection() {
-        lock.lock();
-
+    public void addConnection(String name) {
         connections++;
-        updateConnectionsLabel(connections);
 
-        lock.unlock();
+        updateConnectionsLabel(connections);
+        connectionsTextArea.setText(name);
     }
 
     public void removeConnection() {
-        lock.lock();
-
         connections--;
-        updateConnectionsLabel(connections);
 
-        lock.unlock();
+        updateConnectionsLabel(connections);
+        connectionsTextArea.clear();
     }
 
 }
